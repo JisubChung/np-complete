@@ -2,8 +2,7 @@ package packingRectangles;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.Scanner;
+import java.util.*;
 
 public class Main {
 
@@ -14,20 +13,35 @@ public class Main {
 		
 		Scanner scanner;
 		try {
-			scanner = new Scanner(new File("E:/JAVA projects/NPComplete/src/packingRectangles/instance.txt"));
+			scanner = new Scanner(new File("./src/packingRectangles/instance.txt"));
 			read(scanner, list);
 			Scanner reader = new Scanner(System.in);  // Reading from System.in
-			System.out.println("Please select an option: ");
-			System.out.println("1: Find a pretty good solution");
-			System.out.println("2: Find an exact solution");
-			int option = reader.nextInt(); // Scans the next token of the input as an int.
-			switch (option) {
-				case 1: System.out.println("Finding a pretty good solution....");
-						break;
-				case 2: System.out.println("Finding a exact solution....");
-						break;
-				default: System.out.println("Invalid option");
-						break;
+			int go = 0, option = 0;
+			while (go == 0) {
+				System.out.println("Please select an option: ");
+				System.out.println("1: Find a pretty good solution");
+				System.out.println("2: Find an exact solution");
+				option = reader.nextInt(); // Scans the next token of the input as an int.
+				Date date = new Date();
+				long time1, time2;
+				switch (option) {
+					case 1: System.out.println("Finding a pretty good solution....");
+							time1 = date.getTime();
+							prettyGoodSolution();
+							time2 = date.getTime();
+							System.out.println((time2 - time1) + "ms" );
+							go = 1;
+							break;
+					case 2: System.out.println("Finding a exact solution....");
+							time1 = date.getTime();
+							exactSolution();
+							time2 = date.getTime();
+							System.out.println((time2 - time1) + "ms" );
+							go = 1;
+							break;
+					default: System.out.println("Invalid option");
+							break;
+				}
 			}
 			reader.close();
 		} catch (FileNotFoundException e) {
@@ -36,6 +50,15 @@ public class Main {
 		}		
 	}
 	
+	private static void exactSolution() {
+		// TODO Auto-generated method stub
+	}
+
+	private static void prettyGoodSolution() {
+		// TODO Auto-generated method stub
+		
+	}
+
 	public static void read(Scanner scanner, ArrayList<Rectangle> list) {
 		while (scanner.hasNextLine()) {
 			Scanner scanLine = new Scanner(scanner.nextLine());

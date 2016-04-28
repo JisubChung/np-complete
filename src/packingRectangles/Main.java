@@ -22,20 +22,19 @@ public class Main {
 				System.out.println("1: Find a pretty good solution");
 				System.out.println("2: Find an exact solution");
 				option = reader.nextInt(); // Scans the next token of the input as an int.
-				Date date = new Date();
 				long time1, time2;
 				switch (option) {
 					case 1: System.out.println("Finding a pretty good solution....");
-							time1 = date.getTime();
+							time1 = System.currentTimeMillis();
 							prettyGoodSolution();
-							time2 = date.getTime();
+							time2 = System.currentTimeMillis();
 							System.out.println((time2 - time1) + "ms" );
 							go = 1;
 							break;
 					case 2: System.out.println("Finding a exact solution....");
-							time1 = date.getTime();
+							time1 = System.currentTimeMillis();
 							exactSolution();
-							time2 = date.getTime();
+							time2 = System.currentTimeMillis();
 							System.out.println((time2 - time1) + "ms" );
 							go = 1;
 							break;
@@ -52,6 +51,7 @@ public class Main {
 	
 	private static void exactSolution() {
 		// TODO Auto-generated method stub
+		
 	}
 
 	private static void prettyGoodSolution() {

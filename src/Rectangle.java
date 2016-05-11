@@ -1,25 +1,18 @@
 import java.util.Comparator;
-<<<<<<< HEAD
 import java.util.Stack;
-=======
->>>>>>> a5ed9dbc70462cb1d7e7150b18e10363b25721b7
 
 public class Rectangle {
     private int length;
     private int width;
     private int area;
-<<<<<<< HEAD
     private Stack<Integer> colHistory = new Stack();
     private Stack<Integer> rowHistory = new Stack();
     private boolean isUsed;
-=======
->>>>>>> a5ed9dbc70462cb1d7e7150b18e10363b25721b7
 
     Rectangle(int length, int width) {
         this.length = length;
         this.width = width;
         this.area = length*width;
-<<<<<<< HEAD
         this.isUsed = false;
     }
 
@@ -42,8 +35,6 @@ public class Rectangle {
         } else {
             isUsed = false;
         }
-=======
->>>>>>> a5ed9dbc70462cb1d7e7150b18e10363b25721b7
     }
 
     public int getLength() {
@@ -56,7 +47,6 @@ public class Rectangle {
         return area;
     }
 
-<<<<<<< HEAD
     public int getAddedCol() {
         return colHistory.peek();
     }
@@ -78,8 +68,6 @@ public class Rectangle {
         colHistory.pop();
     }
 
-=======
->>>>>>> a5ed9dbc70462cb1d7e7150b18e10363b25721b7
     /**
      * All sorts are >
      * Usage Guide:

@@ -102,7 +102,6 @@ public class PackingRectangle {
     }
 
     public void toStringPack() {
-<<<<<<< HEAD
         for(int row = 0; row < width; row++) {
             for (int col = 0; col < length; col++) {
                 if(getCell(row, col)) {

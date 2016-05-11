@@ -19,7 +19,6 @@ public class Main {
         try {
             scanner = new Scanner(new File("./src/instance.txt"));
             read(scanner, list);
-
             Scanner reader = new Scanner(System.in);
 
             boolean go = true;
@@ -71,14 +70,6 @@ public class Main {
                 list.add(new Rectangle(length, width));
             }
             scanLine.close();
-        }
-    }
-
-    public static void listToString(ArrayList<Rectangle> list) {
-        int i = 0;
-        while (i != list.size()) {
-            System.out.println(list.get(i).getLength() + " " + list.get(i).getWidth());
-            i++;
         }
     }
 
@@ -152,7 +143,7 @@ public class Main {
         //just initialize it to first length
         int minLength = list.get(0).getLength();
         for (int i = 1; i < list.size(); i++) {
-            if (minLength > list.get(i).getLength()) {
+            if (minLength < list.get(i).getLength()) {
                 minLength = list.get(i).getLength();
             }
         }
@@ -164,7 +155,7 @@ public class Main {
         //just initialize it to first length
         int minWidth = list.get(0).getLength();
         for (int i = 1; i < list.size(); i++) {
-            if (minWidth > list.get(i).getLength()) {
+            if (minWidth < list.get(i).getLength()) {
                 minWidth = list.get(i).getLength();
             }
         }
@@ -173,24 +164,9 @@ public class Main {
 
     // finds the min area
     private static int findMinArea(ArrayList<Rectangle> list) {
-        int maxSide = list.get(0).getLength();
+        int minArea = 0;
         for (int j = 0; j < list.size(); j++) {
-            if (maxSide < list.get(j).getLength()) {
-                maxSide = list.get(j).getLength();
-            }
-            if (maxSide < list.get(j).getWidth()) {
-                maxSide = list.get(j).getWidth();
-            }
-        }
-
-        int minArea = 0, i = 0;
-        do {
-            minArea += list.get(i).getArea();
-            i++;
-        } while (i < list.size());
-
-        while (minArea % maxSide != 0) {
-            minArea++;
+            minArea+=list.get(j).getArea();
         }
         return minArea;
     }
@@ -210,45 +186,55 @@ public class Main {
             doesFit = true;
         } else {
             for (int i = 0; i < list.size() && !doesFit; i++) {
-                ArrayList<Rectangle> nextList = new ArrayList<>();
-                for (int j = 0; j < list.size(); j++) {
-                    if (j != i) {
-                        nextList.add(list.get(j));
-                    }
-                }
-                doesFit = someonePackThis(pack, nextList, list.get(i));
+                doesFit = someonePackThis(pack, list, i);
             }
         }
-        pack.toStringPack();
         return doesFit;
     }
 
-	private static boolean someonePackThis(PackingRectangle pack, ArrayList<Rectangle> list, Rectangle rectangle) {
-        System.out.println("Gonna try to print out " + rectangle.getLength() + " x " + rectangle.getWidth());
+    private static boolean someonePackThis(PackingRectangle pack, ArrayList<Rectangle> list, int index) {
         boolean doesFit = false;
-        int insertLt, insertWd;
-        if (list.isEmpty()) {
-            doesFit = true;
-        } else if (pack.iWillTryToPack(rectangle)) {
-            insertLt = pack.getWhereLastAdded()[0];
-            insertWd = pack.getWhereLastAdded()[1];
-            for (int i = 0; i < list.size() && !doesFit; i++) {
-                ArrayList<Rectangle> nextList = new ArrayList<>();
-                for (int j = 0; j < list.size(); j++) {
-                    if (j != i) {
-                        nextList.add(list.get(j));
-                    }
-                }
-                if(!someonePackThis(pack, nextList, list.get(i))) {
-                        break;
-                }
+
+        // Terminate recursions upon reaching last element, note this doesn't always conclude recursion
+        if (pack.howManyRectanglesPacked() == list.size()-1) {
+            int i = 0;
+            while (i < list.size() && list.get(i).isUsed()) {
+                i++;
             }
+            list.get(i).useThisRectangle();
+            doesFit = pack.whereWillThisFit(list.get(i));
             if (!doesFit) {
-                pack.flipRectangle(insertLt, insertWd, rectangle);
+                list.get(i).dontUseThisRectangle();
+            } else {
+                pack.flipRectangle(list.get(i).getAddedRow(), list.get(i).getAddedCol(), list.get(i));
+            }
+        } else {
+            int i = index, k = 0;
+            while(k < list.size() && !doesFit && !list.get(i).isUsed() && pack.howManyRectanglesPacked() < list.size() && pack.whereWillThisFit(list.get(i))) {
+
+                // identify the rectangle to be packed
+                list.get(i).useThisRectangle();
+
+                // pack the rectangle
+                pack.flipRectangle(list.get(i).getAddedRow(), list.get(i).getAddedCol(), list.get(i));
+
+                // recursively pack another rectangle
+                doesFit = someonePackThis(pack, list, ((i+1)%list.size()));
+
+                // if the recursion doesn't give a packed rectangle then remove this rectangle
+                if (!doesFit) {
+                    list.get(i).dontUseThisRectangle();
+                    pack.flipRectangle(list.get(i).getAddedRow(), list.get(i).getAddedCol(), list.get(i));
+                }
+                i++;
+                k++;
+                if (i >= list.size()) {
+                    i = i%list.size();
+                }
             }
         }
         return doesFit;
-	}
+    }
 
     private static void prettyGoodSolution() {
         // TODO Auto-generated method stub

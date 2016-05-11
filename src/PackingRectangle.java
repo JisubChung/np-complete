@@ -113,5 +113,7 @@ public class PackingRectangle {
             }
             System.out.println();
         }
+        System.out.println("Dimensions: " + length + "x" + width);
+        System.out.println("Area: " + length * width);
     }
 }

@@ -19,40 +19,38 @@ public class Main {
         try {
             scanner = new Scanner(new File("./src/instance.txt"));
             read(scanner, list);
-            Scanner reader = new Scanner(System.in);  // Reading from System.in
+            Scanner reader = new Scanner(System.in);
 
-
-//            boolean go = true;
-//            int option = 0;
-//            while (go) {
-//                System.out.println("Please select an option: ");
-//                System.out.println("1: Find a pretty good solution");
-//                System.out.println("2: Find an exact solution");
-//                option = reader.nextInt(); // Scans the next token of the input as an int.
-//                long time1, time2;
-//                switch (option) {
-//                    case 1:
-//                        System.out.println("Finding a pretty good solution....");
-//                        time1 = System.currentTimeMillis();
-//                        prettyGoodSolution();
-//                        time2 = System.currentTimeMillis();
-//                        System.out.println((time2 - time1) + "ms");
-//                        go = false;
-//                        break;
-//                    case 2:
-//                        System.out.println("Finding a exact solution....");
-//                        time1 = System.currentTimeMillis();
-//                        exactSolution(list);
-//                        time2 = System.currentTimeMillis();
-//                        System.out.println((time2 - time1) + "ms");
-//                        go = false;
-//                        break;
-//                    default:
-//                        System.out.println("Invalid option");
-//                        break;
-//                }
-//            }
-            System.out.println(someonePackThis(new PackingRectangle(4,12),list));
+            boolean go = true;
+            int option = 0;
+            while (go) {
+                System.out.println("Please select an option: ");
+                System.out.println("1: Find a pretty good solution");
+                System.out.println("2: Find an exact solution");
+                option = reader.nextInt();
+                long time1, time2;
+                switch (option) {
+                    case 1:
+                        System.out.println("Finding a pretty good solution....");
+                        time1 = System.currentTimeMillis();
+                        prettyGoodSolution();
+                        time2 = System.currentTimeMillis();
+                        System.out.println((time2 - time1) + "ms");
+                        go = false;
+                        break;
+                    case 2:
+                        System.out.println("Finding a exact solution....");
+                        time1 = System.currentTimeMillis();
+                        exactSolution(list);
+                        time2 = System.currentTimeMillis();
+                        System.out.println((time2 - time1) + "ms");
+                        go = false;
+                        break;
+                    default:
+                        System.out.println("Invalid option");
+                        break;
+                }
+            }
 
             reader.close();
         } catch (FileNotFoundException e) {
@@ -107,27 +105,37 @@ public class Main {
 
         // Second: Find minArea
         int minArea = findMinArea(list);
+        int currentArea = minArea;
 
         // Third: Figure packing parameters
-        int length, width;
-        if (usingLength) {
-            length = minLength;
-            while (minArea % length != 0) {
-                length++;
-            }
-            width = minArea / length;
-        } else {
-            width = minWidth;
-            while (minArea % width != 0) {
-                width++;
-            }
-            length = minArea / width;
-        }
+        int length = 0, width = 0;
 
         // Fourth: Try a packing
-        PackingRectangle pack = new PackingRectangle(length, width);
+        PackingRectangle pack;
         Collections.sort(list, Rectangle.areaComparator);
-        someonePackThis(pack, list);
+
+        do {
+            if (usingLength) {
+                do {
+                    length++;
+                } while (currentArea % length != 0 && length < currentArea/2);
+                width = currentArea/length;
+            } else {
+                do {
+                    width++;
+                } while (currentArea % width != 0 && width < currentArea/2);
+                length = currentArea/width;
+            }
+            // Sixth: Try new Area
+            if (length >= currentArea/minLength || width >= currentArea/minWidth) {
+                currentArea++;
+                length = minLength;
+                width = minWidth;
+            }
+            // Fifth: Try new parameters
+            pack = new PackingRectangle(length, width);
+        } while (!someonePackThis(pack, list));
+        pack.toStringPack();
     }
 
     // finds the min length
@@ -135,7 +143,7 @@ public class Main {
         //just initialize it to first length
         int minLength = list.get(0).getLength();
         for (int i = 1; i < list.size(); i++) {
-            if (minLength > list.get(i).getLength()) {
+            if (minLength < list.get(i).getLength()) {
                 minLength = list.get(i).getLength();
             }
         }
@@ -147,7 +155,7 @@ public class Main {
         //just initialize it to first length
         int minWidth = list.get(0).getLength();
         for (int i = 1; i < list.size(); i++) {
-            if (minWidth > list.get(i).getLength()) {
+            if (minWidth < list.get(i).getLength()) {
                 minWidth = list.get(i).getLength();
             }
         }
@@ -156,24 +164,9 @@ public class Main {
 
     // finds the min area
     private static int findMinArea(ArrayList<Rectangle> list) {
-        int maxSide = list.get(0).getLength();
+        int minArea = 0;
         for (int j = 0; j < list.size(); j++) {
-            if (maxSide < list.get(j).getLength()) {
-                maxSide = list.get(j).getLength();
-            }
-            if (maxSide < list.get(j).getWidth()) {
-                maxSide = list.get(j).getWidth();
-            }
-        }
-
-        int minArea = 0, i = 0;
-        do {
-            minArea += list.get(i).getArea();
-            i++;
-        } while (i < list.size());
-
-        while (minArea % maxSide != 0) {
-            minArea++;
+            minArea+=list.get(j).getArea();
         }
         return minArea;
     }
@@ -196,8 +189,6 @@ public class Main {
                 doesFit = someonePackThis(pack, list, i);
             }
         }
-        System.out.println("--------FINAL PACKING RESULT--------");
-        pack.toStringPack();
         return doesFit;
     }
 
@@ -221,32 +212,20 @@ public class Main {
             int i = index, k = 0;
             while(k < list.size() && !doesFit && !list.get(i).isUsed() && pack.howManyRectanglesPacked() < list.size() && pack.whereWillThisFit(list.get(i))) {
 
-                System.out.println("Currently packing " + list.get(i).getLength() + "x" +list.get(i).getWidth());
-
                 // identify the rectangle to be packed
                 list.get(i).useThisRectangle();
 
                 // pack the rectangle
                 pack.flipRectangle(list.get(i).getAddedRow(), list.get(i).getAddedCol(), list.get(i));
-                System.out.println("----------------");
-                pack.toStringPack();
-                System.out.println("----------------");
-                System.out.println("Recursively packing " + list.get((i+1)%list.size()).getLength()+ "x" +list.get((i+1)%list.size()).getWidth());
 
                 // recursively pack another rectangle
                 doesFit = someonePackThis(pack, list, ((i+1)%list.size()));
-
-                System.out.println("Failed packing " + list.get((i+1)%list.size()).getLength()+ "x" +list.get((i+1)%list.size()).getWidth());
-                System.out.println("Remove packing " + list.get(i).getLength() + "x" +list.get(i).getWidth() );
 
                 // if the recursion doesn't give a packed rectangle then remove this rectangle
                 if (!doesFit) {
                     list.get(i).dontUseThisRectangle();
                     pack.flipRectangle(list.get(i).getAddedRow(), list.get(i).getAddedCol(), list.get(i));
                 }
-                System.out.println("----------------");
-                pack.toStringPack();
-                System.out.println("----------------");
                 i++;
                 k++;
                 if (i >= list.size()) {

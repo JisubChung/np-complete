@@ -13,7 +13,7 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("Hello");
 
-        ArrayList<Rectangle> list = new ArrayList<Rectangle>();
+        ArrayList<Rectangle> list = new ArrayList<>();
 
         Scanner scanner;
         try {
@@ -52,7 +52,7 @@ public class Main {
 //                        break;
 //                }
 //            }
-            System.out.println(someonePackThis(new PackingRectangle(5,5),list));
+            System.out.println(someonePackThis(new PackingRectangle(4,12),list));
 
             reader.close();
         } catch (FileNotFoundException e) {
@@ -62,7 +62,7 @@ public class Main {
         System.out.println("done!");
     }
 
-    public static void read(Scanner scanner, ArrayList<Rectangle> list) {
+    private static void read(Scanner scanner, ArrayList<Rectangle> list) {
         while (scanner.hasNextLine()) {
             Scanner scanLine = new Scanner(scanner.nextLine());
             scanLine.useDelimiter(" ");
@@ -72,14 +72,6 @@ public class Main {
                 list.add(new Rectangle(length, width));
             }
             scanLine.close();
-        }
-    }
-
-    public static void listToString(ArrayList<Rectangle> list) {
-        int i = 0;
-        while (i != list.size()) {
-            System.out.println(list.get(i).getLength() + " " + list.get(i).getWidth());
-            i++;
         }
     }
 
@@ -201,41 +193,65 @@ public class Main {
             doesFit = true;
         } else {
             for (int i = 0; i < list.size() && !doesFit; i++) {
-                ArrayList<Rectangle> nextList = new ArrayList<>();
-                for (int j = 0; j < list.size(); j++) {
-                    if (j != i) {
-                        nextList.add(list.get(j));
-                    }
-                }
-                doesFit = someonePackThis(pack, nextList, list.get(i));
+                doesFit = someonePackThis(pack, list, i);
             }
         }
+        System.out.println("--------FINAL PACKING RESULT--------");
         pack.toStringPack();
         return doesFit;
     }
 
-	private static boolean someonePackThis(PackingRectangle pack, ArrayList<Rectangle> list, Rectangle rectangle) {
-        System.out.println("Gonna try to print out " + rectangle.getLength() + " x " + rectangle.getWidth());
+	private static boolean someonePackThis(PackingRectangle pack, ArrayList<Rectangle> list, int index) {
         boolean doesFit = false;
-        int insertLt, insertWd;
-        if (list.isEmpty()) {
-            doesFit = true;
-        } else if (pack.iWillTryToPack(rectangle)) {
-            insertLt = pack.getWhereLastAdded()[0];
-            insertWd = pack.getWhereLastAdded()[1];
-            for (int i = 0; i < list.size() && !doesFit; i++) {
-                ArrayList<Rectangle> nextList = new ArrayList<>();
-                for (int j = 0; j < list.size(); j++) {
-                    if (j != i) {
-                        nextList.add(list.get(j));
-                    }
-                }
-                if(!someonePackThis(pack, nextList, list.get(i))) {
-                        break;
-                }
+
+        // Terminate recursions upon reaching last element, note this doesn't always conclude recursion
+        if (pack.howManyRectanglesPacked() == list.size()-1) {
+            int i = 0;
+            while (i < list.size() && list.get(i).isUsed()) {
+                i++;
             }
+            list.get(i).useThisRectangle();
+            doesFit = pack.whereWillThisFit(list.get(i));
             if (!doesFit) {
-                pack.flipRectangle(insertLt, insertWd, rectangle);
+                list.get(i).dontUseThisRectangle();
+            } else {
+                pack.flipRectangle(list.get(i).getAddedRow(), list.get(i).getAddedCol(), list.get(i));
+            }
+        } else {
+            int i = index, k = 0;
+            while(k < list.size() && !doesFit && !list.get(i).isUsed() && pack.howManyRectanglesPacked() < list.size() && pack.whereWillThisFit(list.get(i))) {
+
+                System.out.println("Currently packing " + list.get(i).getLength() + "x" +list.get(i).getWidth());
+
+                // identify the rectangle to be packed
+                list.get(i).useThisRectangle();
+
+                // pack the rectangle
+                pack.flipRectangle(list.get(i).getAddedRow(), list.get(i).getAddedCol(), list.get(i));
+                System.out.println("----------------");
+                pack.toStringPack();
+                System.out.println("----------------");
+                System.out.println("Recursively packing " + list.get((i+1)%list.size()).getLength()+ "x" +list.get((i+1)%list.size()).getWidth());
+
+                // recursively pack another rectangle
+                doesFit = someonePackThis(pack, list, ((i+1)%list.size()));
+
+                System.out.println("Failed packing " + list.get((i+1)%list.size()).getLength()+ "x" +list.get((i+1)%list.size()).getWidth());
+                System.out.println("Remove packing " + list.get(i).getLength() + "x" +list.get(i).getWidth() );
+
+                // if the recursion doesn't give a packed rectangle then remove this rectangle
+                if (!doesFit) {
+                    list.get(i).dontUseThisRectangle();
+                    pack.flipRectangle(list.get(i).getAddedRow(), list.get(i).getAddedCol(), list.get(i));
+                }
+                System.out.println("----------------");
+                pack.toStringPack();
+                System.out.println("----------------");
+                i++;
+                k++;
+                if (i >= list.size()) {
+                    i = i%list.size();
+                }
             }
         }
         return doesFit;

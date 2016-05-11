@@ -1,14 +1,40 @@
 import java.util.Comparator;
+import java.util.Stack;
 
 public class Rectangle {
     private int length;
     private int width;
     private int area;
+    private Stack<Integer> colHistory = new Stack();
+    private Stack<Integer> rowHistory = new Stack();
+    private boolean isUsed;
 
     Rectangle(int length, int width) {
         this.length = length;
         this.width = width;
         this.area = length*width;
+        this.isUsed = false;
+    }
+
+    public boolean isUsed() {
+        return this.isUsed;
+    }
+
+    public void useThisRectangle() {
+        if (isUsed) {
+            System.out.println("you're trying to use an already used rectangle");
+        }
+        else {
+            isUsed = true;
+        }
+    }
+
+    public void dontUseThisRectangle() {
+        if (!isUsed) {
+            System.out.println("You haven't used this rectangle");
+        } else {
+            isUsed = false;
+        }
     }
 
     public int getLength() {
@@ -19,6 +45,27 @@ public class Rectangle {
     }
     public int getArea() {
         return area;
+    }
+
+    public int getAddedCol() {
+        return colHistory.peek();
+    }
+
+    public void addCol(int addedCol) {
+        colHistory.push(addedCol);
+    }
+
+    public int getAddedRow() {
+        return rowHistory.peek();
+    }
+
+    public void addRow(int addedRow) {
+        rowHistory.push(addedRow);
+    }
+
+    public void removeRectangleHistory() {
+        rowHistory.pop();
+        colHistory.pop();
     }
 
     /**

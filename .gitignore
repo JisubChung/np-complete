@@ -2,6 +2,8 @@ The file generated for IntelliJ contains the following
 
 # Created by https://www.gitignore.io
 
+/out/
+
 ### Intellij ###
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm
 

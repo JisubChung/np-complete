@@ -22,36 +22,96 @@ public class Main {
             Scanner reader = new Scanner(System.in);
 
             boolean go = true;
-            int option = 0;
+            int option;
             while (go) {
                 System.out.println("Please select an option: ");
                 System.out.println("1: Find a pretty good solution");
                 System.out.println("2: Find an exact solution");
+                System.out.println("3: Find both");
                 option = reader.nextInt();
+                ArrayList<PackingRectangle> solution;
+                PackingRectangle pack;
                 long time1, time2;
+                int length, width, yes;
                 switch (option) {
                     case 1:
-                        System.out.println("Finding a pretty good solution....");
+                        System.out.println("Finding polynomial solutions...");
                         time1 = System.currentTimeMillis();
-                        prettyGoodSolution();
+                        solution = prettyGoodSolution(list);
                         time2 = System.currentTimeMillis();
-                        System.out.println((time2 - time1) + "ms");
+                        length = solution.size() * solution.get(0).getLength();
+                        width = solution.get(0).getWidth();
+                        System.out.println("Polynomial Solution:");
+                        System.out.println("Duration: " + (time2 - time1) + "ms");
+                        System.out.println("Dimensions: " + length + "x" + width);
+                        System.out.println("Area: " + length*width);
                         go = false;
+
+                        System.out.println("Would you like a print of the result? (1 for yes)");
+                        yes = reader.nextInt();
+                        if( yes == 1) {
+                            printPolySolution(solution);
+                        }
                         break;
                     case 2:
                         System.out.println("Finding a exact solution....");
                         time1 = System.currentTimeMillis();
-                        exactSolution(list);
+                        pack = exactSolution(list);
                         time2 = System.currentTimeMillis();
-                        System.out.println((time2 - time1) + "ms");
+                        length = pack.getLength();
+                        width = pack.getWidth();
+                        System.out.println("Exact Solution:");
+                        System.out.println("Duration: " + (time2 - time1) + "ms");
+                        System.out.println("Dimensions: " + length + "x" + width);
+                        System.out.println("Area: " + length * width);
                         go = false;
+
+                        System.out.println("Would you like a print of the result? (1 for yes)");
+                        yes = reader.nextInt();
+                        if( yes == 1) {
+                            pack.toStringPack();
+                        }
                         break;
+                    case 3:
+                        System.out.println("Finding both solutions...");
+                        time1 = System.currentTimeMillis();
+                        solution = prettyGoodSolution(list);
+                        time2 = System.currentTimeMillis();
+                        length = solution.size() * solution.get(0).getLength();
+                        width = solution.get(0).getWidth();
+                        System.out.println("Polynomial Solution:");
+                        System.out.println("Duration: " + (time2 - time1) + "ms");
+                        System.out.println("Dimensions: " + length + "x" + width);
+                        System.out.println("Area: " + length*width);
+
+                        System.out.println("=========");
+
+                        time1 = System.currentTimeMillis();
+                        pack = exactSolution(list);
+                        time2 = System.currentTimeMillis();
+                        length = pack.getLength();
+                        width = pack.getWidth();
+                        System.out.println("Exact Solution:");
+                        System.out.println("Duration: " + (time2 - time1) + "ms");
+                        System.out.println("Dimensions: " + length + "x" + width);
+                        System.out.println("Area: " + length * width);
+                        go = false;
+
+                        System.out.println("Would you like a print of the result? (1 for yes)");
+                        yes = reader.nextInt();
+                        if( yes == 1) {
+                            System.out.println("---polynomial---");
+                            printPolySolution(solution);
+                            System.out.println("---exact---");
+                            pack.toStringPack();
+                        }
+                        break;
+
                     default:
                         System.out.println("Invalid option");
                         break;
                 }
             }
-
             reader.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -93,22 +153,21 @@ public class Main {
      * * ie: when minArea/minSide >= minOtherSide
      * 7. The first successful rectangle packing is the minimum
      */
-    public static void exactSolution(ArrayList<Rectangle> list) {
+    private static PackingRectangle exactSolution(ArrayList<Rectangle> list) {
 
         // First: Find minSide
-        int minLength = findMinLength(list);
-        int minWidth = findMinWidth(list);
+        int minLength = findMinLength(list).getLength();
+        int minWidth = findMinWidth(list).getWidth();
         boolean usingLength = false;
         if (minLength <= minWidth) {
             usingLength = true;
         }
 
         // Second: Find minArea
-        int minArea = findMinArea(list);
-        int currentArea = minArea;
+        int currentArea = findMinArea(list);
 
         // Third: Figure packing parameters
-        int length = 0, width = 0;
+        int length = minLength-1, width = minWidth-1;
 
         // Fourth: Try a packing
         PackingRectangle pack;
@@ -127,46 +186,43 @@ public class Main {
                 length = currentArea/width;
             }
             // Sixth: Try new Area
-            if (length >= currentArea/minLength || width >= currentArea/minWidth) {
+            if (length > currentArea/minLength || width > currentArea/minWidth) {
                 currentArea++;
-                length = minLength;
-                width = minWidth;
+                length = minLength-1;
+                width = minWidth-1;
             }
             // Fifth: Try new parameters
             pack = new PackingRectangle(length, width);
         } while (!someonePackThis(pack, list));
-        pack.toStringPack();
+        return pack;
     }
 
-    // finds the min length
-    private static int findMinLength(ArrayList<Rectangle> list) {
+    private static Rectangle findMinLength(ArrayList<Rectangle> list) {
         //just initialize it to first length
-        int minLength = list.get(0).getLength();
+        Rectangle rectangle = list.get(0);
         for (int i = 1; i < list.size(); i++) {
-            if (minLength < list.get(i).getLength()) {
-                minLength = list.get(i).getLength();
+            if (rectangle.getLength() < list.get(i).getLength()) {
+                rectangle = list.get(i);
             }
         }
-        return minLength;
+        return rectangle;
     }
 
-    // finds the min width
-    private static int findMinWidth(ArrayList<Rectangle> list) {
+    private static Rectangle findMinWidth(ArrayList<Rectangle> list) {
         //just initialize it to first length
-        int minWidth = list.get(0).getLength();
+        Rectangle rectangle = list.get(0);
         for (int i = 1; i < list.size(); i++) {
-            if (minWidth < list.get(i).getLength()) {
-                minWidth = list.get(i).getLength();
+            if (rectangle.getWidth() < list.get(i).getWidth()) {
+                rectangle = list.get(i);
             }
         }
-        return minWidth;
+        return rectangle;
     }
 
-    // finds the min area
     private static int findMinArea(ArrayList<Rectangle> list) {
         int minArea = 0;
-        for (int j = 0; j < list.size(); j++) {
-            minArea+=list.get(j).getArea();
+        for (Rectangle rectangle: list) {
+            minArea += rectangle.getArea();
         }
         return minArea;
     }
@@ -236,9 +292,77 @@ public class Main {
         return doesFit;
     }
 
-    private static void prettyGoodSolution() {
-        // TODO Auto-generated method stub
+    /**
+     * The general plan for this is a sort of First-Fit bin packing algorithm. We'll first need to create a "bin" which
+     * will be defined as the longest length/width. Thus each bin will be a packing rectangle. Then we'll simply pack
+     * each of these "bins". As all of the bins will be of the same dimensions we can simply add up their areas to find
+     * the area of the greater packing rectangle. This is a 2-approximation.
+     *
+     * This process is going to be done over the following steps:
+     *      1. Create bin dimensions
+     *      2. Begin packing bins
+     *          a. If a rectangle will fit in a bin, then stuff it
+     *          b. else put it in a new bin
+     */
+    private static ArrayList<PackingRectangle> prettyGoodSolution(ArrayList<Rectangle> rectList) {
 
+        // First: Find dimensions
+        int length, width;
+        Rectangle rectangleLength = findMinLength(rectList);
+        Rectangle rectangleWidth = findMinWidth(rectList);
+
+        if (rectangleLength == rectangleWidth) {
+
+            // There is the special case where the bin can be the exact size of a rectangle
+            length = rectangleLength.getLength();
+            width = rectangleWidth.getWidth();
+        } else {
+
+            // Otherwise we need to account for a bad case scenario
+            length = rectangleLength.getLength();
+            length += rectangleWidth.getLength();
+            width = rectangleWidth.getWidth();
+            width += rectangleLength.getWidth();
+        }
+
+        // Second: Pack Bins
+        ArrayList<PackingRectangle> listOfBins = new ArrayList<>();
+
+        for (int rectIndex = 0; rectIndex < rectList.size(); rectIndex++) {
+            boolean added = false;
+
+            // Try to fit it in a pre-existing mini-packingRectangle
+            for (int binIndex = 0; binIndex < listOfBins.size(); binIndex++) {
+                if (listOfBins.get(binIndex).whereWillThisFit(rectList.get(rectIndex))) {
+                    listOfBins.get(binIndex).flipRectangle(rectList.get(rectIndex).getAddedRow(), rectList.get(rectIndex).getAddedCol(), rectList.get(rectIndex));
+                    added = true;
+                }
+            }
+
+            // Couldn't add it to a pre-existing mini-packingRectangle, so create a new one
+            if (!added) {
+                listOfBins.add(new PackingRectangle(length, width));
+                listOfBins.get(listOfBins.size()-1).whereWillThisFit(rectList.get(rectIndex));
+                listOfBins.get(listOfBins.size()-1).flipRectangle(rectList.get(rectIndex).getAddedRow(), rectList.get(rectIndex).getAddedCol(), rectList.get(rectIndex));
+            }
+        }
+
+        return listOfBins;
     }
 
+    private static void printPolySolution(ArrayList<PackingRectangle> list) {
+        for(int k = 0; k < list.get(0).getWidth(); k++) {
+            for(int i = 0; i < list.get(0).getLength()*list.size(); i++) {
+                if(i%list.get(0).getLength() == 0 && i != 0) {
+                    System.out.print("|");
+                }
+                if(list.get(i/list.get(0).getLength()).getCell(k, i%(list.get(0).getLength()))) {
+                    System.out.print("1");
+                } else {
+                    System.out.print("0");
+                }
+            }
+            System.out.println();
+        }
+    }
 }

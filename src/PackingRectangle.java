@@ -3,6 +3,7 @@ public class PackingRectangle {
     private int width;
     private boolean[][] packingRectangle;
     private int numberOfRectanglesPacked;
+    private int remainingArea;
 
     /**
      * A note: all array calls are supposed to:
@@ -17,6 +18,7 @@ public class PackingRectangle {
         this.numberOfRectanglesPacked = 0;
         packingRectangle = new boolean[width][length];
         initialize();
+        remainingArea = length * width;
     }
 
     public int howManyRectanglesPacked() {
@@ -31,8 +33,12 @@ public class PackingRectangle {
         numberOfRectanglesPacked--;
     }
 
-    private boolean getCell(int row, int col) {
+    public boolean getCell(int row, int col) {
         return packingRectangle[row][col];
+    }
+
+    public int getRemainingArea() {
+        return remainingArea;
     }
 
     // this method FLIPS the rectangle for reusability
@@ -53,9 +59,11 @@ public class PackingRectangle {
             rectangle.addCol(col);
             rectangle.addRow(row);
             packedARectangle();
+            remainingArea -= rectangle.getArea();
         } else {
             rectangle.removeRectangleHistory();
             unpackARectangle();
+            remainingArea += rectangle.getArea();
         }
     }
 
@@ -101,6 +109,14 @@ public class PackingRectangle {
         return doesFit;
     }
 
+    public int getLength() {
+        return this.length;
+    }
+
+    public int getWidth() {
+        return this.width;
+    }
+
     public void toStringPack() {
         for(int row = 0; row < width; row++) {
             for (int col = 0; col < length; col++) {
@@ -113,7 +129,5 @@ public class PackingRectangle {
             }
             System.out.println();
         }
-        System.out.println("Dimensions: " + length + "x" + width);
-        System.out.println("Area: " + length * width);
     }
 }
